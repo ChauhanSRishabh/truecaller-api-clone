@@ -1,0 +1,45 @@
+Our root directory and contains all the project related code, configuration and environment. 
+
+It contains two sub-directories api and .venv.
+
+api directory contains all the source code related to our API.
+It has three files:
+_init_.py - Initializes our app and databases
+models.py - contains the classes/models for our database
+views.py - contains the endpoints for our API.
+
+.venv is the virtual environment for the project(haven't included it)
+database.db is our database
+run.py file is the main file which is executed first whenever the application is started.
+requirements.txt contains all the dependencies of the project.
+
+Create the virtual environment
+$ python3 -m venv .venv
+
+Activate the virtual environment
+$ source .venv/bin/activate
+
+Install flask using pip3
+$ pip3 install flask
+
+Install flask_sqlalchemy using pip3
+$ pip3 install flask_sqlalchemy
+
+To see the project working, execute these 3 commands while being in the virtual environment:
+$ export FLASK_APP=run.py    
+$ export FLASK_ENV=development  
+$ flask run
+
+
+Every time a user registers and then logs-in, a unique authentication token is generated for the session which is shown to the user with a message saying "You are logged in successfully". 
+The user must remember/save it. 
+Once logged in we have to pass this token for each Request method(be it GET, PUT, POST) for all the endpoints in our API.
+
+How to pass the token:
+We give the auth_token through the Headers section in the Postman App before sending any request for any Endpoint
+Choose request method -> enter request URL -> choose Headers fron the section below the URL field
+Inside Headers, choose Key:"Authorization" and Value:"auth_token" that was displayed when you logged in
+Hit Send
+
+
+ 
