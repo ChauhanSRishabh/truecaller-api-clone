@@ -17,13 +17,13 @@ To see the instructions on how to run this API, click [here](instructions.txt)
 Asks the user to register/login if not logged in, i.e., no valid authorization token was passed by the user while sending this request.  
 Notice the empty Key-Value pair in the Headers section.
 
-<img width="452" alt="image" src="https://user-images.githubusercontent.com/15028913/186335255-bcabe648-9b37-4f9b-992a-27d950102673.png">
+<div  width="100%" align="center"><img width="452" alt="image" src="https://user-images.githubusercontent.com/15028913/186335255-bcabe648-9b37-4f9b-992a-27d950102673.png"></div>
 
 ## REGISTRATION PAGE
 
-Takes details of the new user
-Creates new user
-And asks them to go to /login
+- Takes details of the new user  
+- Creates new user  
+- Asks them to go to /login  
 
 ### User 1
 <img width="452" alt="image" src="https://user-images.githubusercontent.com/15028913/186335270-9474ff11-eaef-41ba-b470-317d94089331.png">
