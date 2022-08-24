@@ -113,7 +113,7 @@ def login():
                 db.session.add(contact)
                 db.session.commit()
 
-            return jsonify({'Message' : 'You are logged in successfully', 'Authorization Token' : user.auth_token, 'Success' : "Contact Details were synced" }) # show auth_token to the user so that he can remember/save it. This token needs to be passed for each Request method(be it GET, PUT, POST) for all the endpoints defined below
+            return jsonify({'Message' : 'You are logged in successfully', 'Authorization Token' : user.auth_token, 'Success' : "Contact Details were synced" }) # show auth_token to the user so that he can remember/save it. This token needs to be passed for each Request method(be it GET, PATCH, POST) for all the endpoints defined below
         else:
             return jsonify({'Error' : 'Invalid username or password'})
 
@@ -122,7 +122,7 @@ def login():
 
     
 # Endpoint to Search by name
-@app.route('/contacts/search/<contact_name>', methods=['GET'])
+@app.route('/contacts/searchname/<contact_name>', methods=['GET'])
 def search_by_name(contact_name):
     if validateUser():
         if not contact_name:
@@ -140,10 +140,10 @@ Request Method = GET
 Request URL would be : 'http://127.0.0.1:5000/contacts/<contact_number>'
 
 (2) Update the spam status for a given contact number
-Request Method = PUT
+Request Method = PATCH
 Request URL would be : 'http://127.0.0.1:5000/contacts/<contact_number>?status=yes'
 '''
-@app.route('/contacts/<contact_number>', methods=['GET', 'PUT'])
+@app.route('/contacts/<contact_number>', methods=['GET', 'PATCH'])
 def search(contact_number):
     if validateUser():
         if not contact_number:
@@ -162,7 +162,7 @@ def search(contact_number):
                     output.append(contact_data)
                 return jsonify({"Message":"Not a Registered User", "contacts" : output})
 
-        elif request.method == 'PUT':
+        elif request.method == 'PATCH':
             status = None
             try:
                 status = request.args.get('status')
