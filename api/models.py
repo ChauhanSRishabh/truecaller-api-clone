@@ -9,10 +9,9 @@ class User(db.Model):
     email = db.Column(db.String(50), unique=True)
     auth_token = db.Column(db.String(10), unique=True)
 
-# id is a unique id made of "user_id + _ + key"
-# key is the unique identifier for each synced/added contact by that particular user
 class Contact(db.Model):
-    id = db.Column(db.String(10), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey(User.id))
     name = db.Column(db.String(50), nullable=False)
     phone_number = db.Column(db.String(10), nullable=False) # phone number taken as a string as it helps with implementation of 're' module inside isValidNumber() function
     is_spam = db.Column(db.String(10))
