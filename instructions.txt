@@ -30,16 +30,20 @@ $ export FLASK_APP=run.py
 $ export FLASK_ENV=development  
 $ flask run
 
+Registration and Profile:
+● A user has to register with at least name, username and phone number, along with a password, before using. He can optionally add an email address.
+● Only one user can register on the app with a particular phone number.
+● A user needs to be logged in to do anything; there is no public access to anything.
 
-Every time a user registers and then logs-in, a unique authentication token is generated for the session which is shown to the user with a message saying "You are logged in successfully". 
+Every time a user registers and then logs-in, a unique Authorization Token is generated for the session which is shown to the user with a message saying "You are logged in successfully". 
 The user must remember/save it. 
 Once logged in we have to pass this token for each Request method(be it GET, PATCH, POST) for all the endpoints in our API.
 
-How to pass the token:
-We give the auth_token through the Headers section in the Postman App before sending any request for any Endpoint.
-Choose request method -> enter request URL -> choose Headers from the section below the URL field
-Inside Headers, choose Key:"Authorization" and Value:"auth_token" that was displayed when you logged in.
-Hit Send
+How to pass the Token:
+● We give the auth_token through the Headers section in the Postman App before sending any request for any Endpoint.
+● Choose request method -> enter request URL -> choose Headers from the section below the URL field
+● Inside Headers, choose Key:"Authorization" and Value:"auth_token" that was displayed when you logged in.
+● Hit Send
 
 
  
