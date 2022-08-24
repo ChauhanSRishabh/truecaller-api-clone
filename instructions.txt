@@ -33,12 +33,12 @@ $ flask run
 
 Every time a user registers and then logs-in, a unique authentication token is generated for the session which is shown to the user with a message saying "You are logged in successfully". 
 The user must remember/save it. 
-Once logged in we have to pass this token for each Request method(be it GET, PUT, POST) for all the endpoints in our API.
+Once logged in we have to pass this token for each Request method(be it GET, PATCH, POST) for all the endpoints in our API.
 
 How to pass the token:
-We give the auth_token through the Headers section in the Postman App before sending any request for any Endpoint
-Choose request method -> enter request URL -> choose Headers fron the section below the URL field
-Inside Headers, choose Key:"Authorization" and Value:"auth_token" that was displayed when you logged in
+We give the auth_token through the Headers section in the Postman App before sending any request for any Endpoint.
+Choose request method -> enter request URL -> choose Headers from the section below the URL field
+Inside Headers, choose Key:"Authorization" and Value:"auth_token" that was displayed when you logged in.
 Hit Send
 
 
