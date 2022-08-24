@@ -1,3 +1,4 @@
+from ast import Return
 from api import app, db
 from flask import request, jsonify
 from api.models import User, Contact
@@ -41,9 +42,9 @@ def isValidNumber(ph_no):
 # this function validates whether user is logged in or not
 # all our endpoints use this function to verify if user is logged in or not
 def validateUser():
-    s =  (request.headers.get('Authorization'))
+    s = request.headers.get('Authorization')
     user = User.query.filter(User.auth_token==s).first()
-    if not user:
+    if not user or s is None:
         return False
     else:
         return True
@@ -52,9 +53,9 @@ def validateUser():
 @app.route('/')
 def home():
     if validateUser():
-        return jsonify({'message' : 'You are already logged in'})
+        return jsonify({'Message' : 'You are already logged in'})
     else:
-        return jsonify({'message' : 'Unauthorized User. Go /login, /register'})
+        return jsonify({'Message' : 'Unauthorized User. Go /login, /register'})
 
 # Endpoint for Registering new user
 @app.route('/register', methods=['POST'])
@@ -65,70 +66,82 @@ def register():
         name=request.json['name']
         phone=request.json['phone']
         email=request.json['email']
-
     except:
-        return jsonify({'status': 400, 'message': 'Bad Request'})
+        return jsonify({'Status': 400, 'Message': 'Bad Request'})
 
     if isValidNumber(phone) and not isValidEmail(email):
-        return jsonify({'message': 'Please enter a valid E-mail Id'})
+        return jsonify({'Message': 'Please enter a valid E-mail Id'})
     elif isValidEmail(email) and not isValidNumber(phone):
-        return jsonify({'message': 'Please enter a valid Phone Number'})
+        return jsonify({'Message': 'Please enter a valid Phone Number'})
     elif not isValidEmail(email) and not isValidNumber(phone):
-        return jsonify({'message': 'Email Id and Phone number entered are wrong'})
+        return jsonify({'Message': 'Both Email Id and Phone number entered are wrong'})
     else:
         user = User(username=username, password=password, name=name, phone=phone, email=email)
         try:
             db.session.add(user)
             db.session.commit()
-            return jsonify({'status': 200, 'message': 'User details successfully added', 'Now' : 'go to /login'})
+            return jsonify({'Status': 200, 'Message': 'User details successfully added', 'Now' : 'go to /login'})
         except :
-            return jsonify({"status": 400,
-                        "message": "Failed to register User.This may occur due to duplicate entry of username or phone number"})
+            return jsonify({"Status": 400,
+                        "Message": "Failed to register User.This may occur due to duplicate entry of username or phone number"})
 
 
 # Endpoint for Login
 @app.route('/login', methods=['POST'])
 def login():
-    username = request.json['username']
-    password = request.json['password']
-    contact_info = request.json['contactInfo']
+    try:
+        username = request.json['username']
+        password = request.json['password']
+    except:
+        return jsonify({'Status': 400, 'Message': 'Bad Request'})
 
-    if username and password and contact_info:
-        #check user exists          
+    if username and password:
+        #check if user exists 
         user = User.query.filter_by(username=username).first()
-        if user.username == username and user.password == password:
-            user.auth_token = ''.join((random.choice(user.username)) for x in range(10))  # Generate authorization token for the user. It is random and unique for each login
-            db.session.add(user) 
-            db.session.commit() # add token to the table
-            
-            for key, value in contact_info.items():
+        user.auth_token = ''.join((random.choice(user.username)) for x in range(10))  # Generate authorization token for the user. It is random and unique for each login
+        db.session.add(user) 
+        db.session.commit()
+        return jsonify({'Message' : 'You are logged in successfully', 'Authorization Token' : user.auth_token, 'Go to /addcontacts' : "To add/sync your contacts" }) # show auth_token to the user so that he can remember/save it. This token needs to be passed for each Request method(be it GET, PATCH, POST) for all the endpoints defined below
+    else:
+        return jsonify({'Error' : 'Invalid username or password'})
+
+# Endpoint to Add Contacts
+@app.route('/addcontacts', methods=['POST'])
+def addContacts():  
+    if validateUser():
+        s =  request.headers.get('Authorization')
+        user = User.query.filter(User.auth_token==s).first()
+        
+        # contactInfo is a dictionary of contact(s) passed by the user 
+        contact_info = request.json['contactInfo']
+    
+        if contact_info:
+            for value in contact_info.values(): # We are only interested in the value field of our dictionary
                 name = value['name']
                 phone_number = value['phone_number']
                 is_spam = value['is_spam']
-                contact_id = str(user.id) + '_' + key 
-                contact = Contact(id=contact_id,
-                          name=name,
-                          phone_number=phone_number,
-                          is_spam = is_spam)
+                user_id = user.id
+                contact = Contact(user_id=user_id,
+                            name=name,
+                            phone_number=phone_number,
+                            is_spam = is_spam)
                 db.session.add(contact)
                 db.session.commit()
-
-            return jsonify({'Message' : 'You are logged in successfully', 'Authorization Token' : user.auth_token, 'Success' : "Contact Details were synced" }) # show auth_token to the user so that he can remember/save it. This token needs to be passed for each Request method(be it GET, PATCH, POST) for all the endpoints defined below
+            return jsonify({'Message' : 'Contact details added successfully'})
         else:
-            return jsonify({'Error' : 'Invalid username or password'})
-
+            return jsonify({'Error' : 'Bad Request', "Status": 400})
     else:
-        return jsonify({'Error' : 'Bad Request'})
+        return jsonify({'Message' : 'You need to be logged in to add contacts'})
 
     
 # Endpoint to Search by name
-@app.route('/contacts/searchname/<contact_name>', methods=['GET'])
+@app.route('/contacts/searchbyname/<contact_name>', methods=['GET'])
 def search_by_name(contact_name):
     if validateUser():
         if not contact_name:
-            return jsonify({"message": "Bad request", "status": 400})
+            return jsonify({"Message": "Bad request", "Status": 400})
         contact = Contact.query.filter_by(name=contact_name).first()
-        return jsonify({"ID": contact.id, "name" : contact.name, "Phone Number" : contact.phone_number, "Spam Status" : contact.is_spam})
+        return jsonify({"Name" : contact.name, "Phone Number" : contact.phone_number, "Spam Status" : contact.is_spam})
     else:
         return jsonify({'Message' : 'You are not logged in'})
 
@@ -139,54 +152,58 @@ This end-point will have two functions depending on the parameters we send with 
 Request Method = GET
 Request URL would be : 'http://127.0.0.1:5000/contacts/<contact_number>'
 
-(2) Update the spam status for a given contact number
+(2) Update the spam Status for a given contact number
 Request Method = PATCH
-Request URL would be : 'http://127.0.0.1:5000/contacts/<contact_number>?status=yes'
+Request URL would be : 'http://127.0.0.1:5000/contacts/<contact_number>?Status=yes'
 '''
 @app.route('/contacts/<contact_number>', methods=['GET', 'PATCH'])
 def search(contact_number):
     if validateUser():
-        if not contact_number:
-            return jsonify({"message": "Bad request", "status": 400})
-        if request.method == 'GET':
-            contact = Contact.query.filter_by(phone_number=contact_number).first()
-            user = User.query.filter_by(phone=contact_number).first()
+        if isValidNumber(contact_number):
+            if request.method == 'GET':
+                user = User.query.filter_by(phone=contact_number).first()
 
-            if user:
-                return jsonify({"Message" : "User with this contact number is registered with us", "name" : user.name, "Phone Number" : user.phone, "Spam Status" : contact.is_spam, "Email Id" : user.email})
-            else :
+                if user:
+                    contact = Contact.query.filter_by(phone_number=contact_number).first()
+                    return jsonify({"Message" : "User with this contact number is registered with us", "Name" : user.name,  "Phone Number" : user.phone, "Spam Status" : contact.is_spam, "Email Id" : user.email})
+                else:
+                    contacts = Contact.query.filter_by(phone_number=contact_number).all()
+                    output = []
+                    for contact in contacts:
+                        contact_data  = {"id" : contact.id, "Name" : contact.name, "Phone Number" : contact.phone_number,   "Spam Status" : contact.is_spam}
+                        output.append(contact_data)
+                    return jsonify({"Message":"Not a Registered User", "Contacts" : output})
+
+            elif request.method == 'PATCH':
+                status = None
+                try:
+                    status = request.args.get('status')
+                except:
+                    return jsonify({"Message":"Wrong Parameters"})
                 contacts = Contact.query.filter_by(phone_number=contact_number).all()
                 output = []
                 for contact in contacts:
-                    contact_data  = {"id" : contact.id, "name" : contact.name, "Number" : contact.phone_number, "Spam Status" : contact.is_spam}
-                    output.append(contact_data)
-                return jsonify({"Message":"Not a Registered User", "contacts" : output})
-
-        elif request.method == 'PATCH':
-            status = None
-            try:
-                status = request.args.get('status')
-            except:
-                return jsonify({"Message":"Wrong Parameters"})
-            contacts = Contact.query.filter_by(phone_number=contact_number).all()
-            output = []
-            for contact in contacts:
-                contact.is_spam = status
-                db.session.add(contact)
-                db.session.commit()
-                new_contact_data  = {"id" : contact.id, "name" : contact.name, "Number" : contact.phone_number, "Spam" : contact.is_spam}
-                output.append(new_contact_data)
-            return jsonify({"Spam Status" : "Spam status was changed for the mentioned number", "contacts affected" : output})
+                    contact.is_spam = status
+                    db.session.add(contact)
+                    db.session.commit()
+                    new_contact_data  = {"id" : contact.id, "Name" : contact.name, "Number" : contact.phone_number, "Spam" : contact.is_spam}
+                    output.append(new_contact_data)
+                return jsonify({"Spam Status" : "Spam Status was changed for the mentioned number", "contacts affected" :   output})
+            else:
+                return jsonify({"Message" : "Bad Request"})
         else:
-            return jsonify({"Msg" : "Bad Request"})
+            return jsonify({"Error": "You entered the wrong number"})
     else:
         return jsonify({'Message' : 'You are not logged in'})
 
 @app.route('/logout')
 def logout():
-    s =  (request.headers.get('Authorization'))
-    user = User.query.filter(User.auth_token==s).first()
-    user.auth_token = None # we set auth_token as None when we logout. So now if we pass the same auth_token that we had earlier, our validateUser() function returns false and we know user isn't logged in
-    db.session.add(user)
-    db.session.commit()
-    return jsonify({'message' : 'You successfully logged out'})
+    if validateUser():
+        s =  (request.headers.get('Authorization'))
+        user = User.query.filter(User.auth_token==s).first()
+        user.auth_token = None # we set auth_token as None when we logout. So now if we pass the same auth_token that we had earlier, our validateUser() function returns false and we know user isn't logged in
+        db.session.add(user)
+        db.session.commit()
+        return jsonify({'Message' : 'You successfully logged out'})
+    else:
+        return jsonify({'Message' : 'You are not logged in'})
