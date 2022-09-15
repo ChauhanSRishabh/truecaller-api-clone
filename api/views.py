@@ -131,7 +131,7 @@ def addContacts():
         else:
             return jsonify({'Error' : 'Bad Request', "Status": 400})
     else:
-        return jsonify({'Message' : 'You need to be logged in to add contacts'})
+        return jsonify({'Message' : 'You need to be logged in to add contacts', "Status": 401})
 
     
 # Endpoint to Search by name
@@ -189,12 +189,13 @@ def search(contact_number):
                     new_contact_data  = {"id" : contact.id, "Name" : contact.name, "Number" : contact.phone_number, "Spam" : contact.is_spam}
                     output.append(new_contact_data)
                 return jsonify({"Spam Status" : "Spam Status was changed for the mentioned number", "contacts affected" :   output})
+
             else:
                 return jsonify({"Message" : "Bad Request"})
         else:
             return jsonify({"Error": "You entered the wrong number"})
     else:
-        return jsonify({'Message' : 'You are not logged in'})
+        return jsonify({'Message' : 'You are not logged in', "Status": 401})
 
 @app.route('/logout')
 def logout():
@@ -206,4 +207,4 @@ def logout():
         db.session.commit()
         return jsonify({'Message' : 'You successfully logged out'})
     else:
-        return jsonify({'Message' : 'You are not logged in'})
+        return jsonify({'Message' : 'You are not logged in', "Status": 401})
