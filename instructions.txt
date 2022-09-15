@@ -1,4 +1,4 @@
-Our root directory and contains all the project related code, configuration and environment. 
+Our root directory contains all the project related code, configuration and environment. 
 
 It contains two sub-directories api and .venv.
 
